@@ -261,20 +261,23 @@
         };
         const modalEl = document.getElementById('modalCadastro');
         const modal = bootstrap.Modal.getInstance(modalEl);
+        
         if(id === "") {
             db.collection("usuarios").doc(usuarioLogadoUid).collection("clientes").add(clienteData).then(() => modal.hide());
         } else {
             const original = clientes.find(c => c.id === id);
-            if(original) clienteData.status = original.status;
+            if(original) {
+                clienteData.status = original.status;
+                if(original.ultimoPagamento) clienteData.ultimoPagamento = original.ultimoPagamento;
+            }
             db.collection("usuarios").doc(usuarioLogadoUid).collection("clientes").doc(id).set(clienteData).then(() => modal.hide());
         }
     }
     
-    // Calcula nova data: +1 mês a partir da data atual (hoje)
     function addOneMonthFromToday() {
         let hoje = new Date();
         hoje.setMonth(hoje.getMonth() + 1);
-        return hoje.toISOString().split('T')[0]; // YYYY-MM-DD
+        return hoje.toISOString().split('T')[0];
     }
     
     function formatarDataBR(dataISO) {
@@ -284,7 +287,6 @@
         return dataISO;
     }
     
-    // Envia mensagem de RENOVAR (✅ pago) e atualiza data +1 mês, status ativo
     function renovarCliente(id) {
         const cliente = clientes.find(c => c.id === id);
         if(!cliente) return;
@@ -295,14 +297,13 @@
         if(cliente.tel) {
             window.open(`https://wa.me/${cliente.tel.replace(/\D/g,'')}?text=${encodeURIComponent(msg)}`);
         } else alert("Número não cadastrado!");
-        // Atualizar firebase
         db.collection("usuarios").doc(usuarioLogadoUid).collection("clientes").doc(id).update({
             data: novaDataISO,
-            status: 'ativo'
+            status: 'ativo',
+            ultimoPagamento: new Date().toISOString()
         }).catch(e => alert("Erro ao renovar: "+e.message));
     }
     
-    // Botão A RECEBER: envia mensagem ⛔️ e acrescenta 1 mês, status = 'apagar'
     function marcarAReceber(id) {
         const cliente = clientes.find(c => c.id === id);
         if(!cliente) return;
@@ -318,7 +319,6 @@
         });
     }
     
-    // Botão PAGO (para categoria A PAGAR) envia ✅ e atualiza status para ativo + mesma data (manter data existente ou apenas confirma)
     function pagarCliente(id) {
         const cliente = clientes.find(c => c.id === id);
         if(!cliente) return;
@@ -328,7 +328,8 @@
         if(cliente.tel) window.open(`https://wa.me/${cliente.tel.replace(/\D/g,'')}?text=${encodeURIComponent(msg)}`);
         else alert("Número não cadastrado!");
         db.collection("usuarios").doc(usuarioLogadoUid).collection("clientes").doc(id).update({
-            status: 'ativo'
+            status: 'ativo',
+            ultimoPagamento: new Date().toISOString()
         });
     }
 
@@ -366,19 +367,14 @@
             else if(statusReal === 'vencer') badgeClass = 'bg-warning text-dark';
             let dataExib = c.data.split('-').reverse().join('/');
             
-            // CONDICIONAL: se for 'apagar' ou 'deletados' os botoes especificos devem aparecer:
-            // Na categoria A PAGAR -> mostrar botão PAGO e não mostrar COBRAR nem WHATSAPP nem DELETAR.
-            // Na categoria LIXO -> mostrar RESTAURAR/EXCLUIR apenas.
             let botoesHtml = '';
             if(c.status === 'deletado') {
                 botoesHtml = `<div class="d-flex gap-2 mt-2"><button class="btn btn-sm btn-info" onclick="restore('${c.id}')">RESTAURAR</button><button class="btn btn-sm btn-danger" onclick="hardDelete('${c.id}')">EXCLUIR PERM</button></div>`;
             } 
             else if(c.status === 'apagar') {
-                // Na view "A PAGAR": só exibe botão PAGO (e talvez editar)
                 botoesHtml = `<div class="d-flex gap-2 mt-2"><button class="btn btn-sm btn-success rounded-pill" onclick="pagarCliente('${c.id}')">✅ PAGO</button><button class="btn btn-sm bg-lilas rounded-pill" onclick="editCliente('${c.id}')"><i class="bi bi-pencil"></i> Editar</button></div>`;
             }
             else {
-                // ATIVOS, A VENCER, EXPIRADOS -> mostrar COBRAR, RENOVAR, WHATSAPP, A RECEBER, EDITAR, DELETAR (soft)
                 botoesHtml = `
                 <div class="whatsapp-row mt-2">
                     <button class="btn btn-sm btn-success flex-fill" onclick="sendCobrancaZap('${c.id}')">💰 COBRAR</button>
@@ -426,20 +422,31 @@
     
     function renderFinanceiro() {
         const mes = document.getElementById('filterMes').value;
-        let received = 0, pending = 0, totalGeral = 0, totalActive = 0;
+        let aReceber = 0;
+        let totalGeral = 0;
+        let totalActive = 0;
+        
         clientes.forEach(c => {
             if(c.status !== 'deletado') {
                 let val = parseFloat(c.valor) || 0;
                 totalGeral += val;
                 totalActive++;
+                
+                // A RECEBER: clientes com vencimento no mês E que não têm pagamento registrado nesse mês
                 if(c.data && c.data.startsWith(mes)) {
-                    if(c.status === 'ativo' || c.status === 'vencer' || c.status === 'expirado') received += val;
-                    else if(c.status === 'apagar') pending += val;
+                    const temPagamentoNoMes = c.ultimoPagamento && c.ultimoPagamento.startsWith(mes);
+                    if(!temPagamentoNoMes) {
+                        aReceber += val;
+                    }
                 }
             }
         });
-        document.getElementById('finRecebido').innerText = `R$ ${received.toFixed(2)}`;
-        document.getElementById('finPendente').innerText = `R$ ${pending.toFixed(2)}`;
+        
+        // RECEBIDO = LUCRO GERAL - A RECEBER
+        const recebido = totalGeral - aReceber;
+        
+        document.getElementById('finRecebido').innerText = `R$ ${recebido.toFixed(2)}`;
+        document.getElementById('finPendente').innerText = `R$ ${aReceber.toFixed(2)}`;
         document.getElementById('finTotalClientes').innerText = totalActive;
         document.getElementById('finGeral').innerText = `R$ ${totalGeral.toFixed(2)}`;
     }
@@ -460,7 +467,6 @@
         }
     }
     
-    // Expor globalmente
     window.renovarCliente = renovarCliente;
     window.marcarAReceber = marcarAReceber;
     window.pagarCliente = pagarCliente;
