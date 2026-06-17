@@ -94,13 +94,14 @@
                 <small id="userEmailDisplay" class="d-block text-secondary" style="font-size: 0.7rem;"></small>
             </div>
         </div>
-        <button class="btn btn-outline-info btn-sm rounded-pill" onclick="toggleAdminPanel()"><i class="bi bi-graph-up"></i> Gestão</button>
+        <!-- Botão "Gestão" removido conforme solicitado anteriormente -->
     </div>
     <button class="btn btn-add-fixo" onclick="showModalCadastro()"><i class="bi bi-plus-lg"></i></button>
 </nav>
 
 <div class="container mt-2">
-    <div id="adminPanel" style="display: none;" class="mb-4 p-2">
+    <!-- Painel financeiro sempre visível -->
+    <div id="adminPanel" class="mb-4 p-2">
         <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
             <h5 class="m-0"><i class="bi bi-cash-stack text-success"></i> Financeiro</h5>
             <input type="month" id="filterMes" class="form-control w-auto bg-dark text-white border-secondary" style="max-width: 170px;">
@@ -120,7 +121,8 @@
         <button class="btn-small bg-primary" onclick="filterData('ativos')">ATIVOS <span id="countAtivos">0</span></button>
         <button class="btn-small" style="background-color: orange;" onclick="filterData('vencer')">A VENCER <span id="countVencer">0</span></button>
         <button class="btn-small bg-danger" onclick="filterData('expirados')">EXPIRADOS <span id="countExp">0</span></button>
-        <button class="btn-small bg-info" onclick="filterData('apagar')">A PAGAR <span id="countPagar">0</span></button>
+        <!-- Botão renomeado para "A RECEBER" -->
+        <button class="btn-small bg-info" onclick="filterData('apagar')">A RECEBER <span id="countPagar">0</span></button>
         <button class="btn-small bg-secondary" onclick="filterData('deletados')">LIXO <span id="countDel">0</span></button>
     </div>
 
@@ -205,7 +207,6 @@
     function openNav() { document.getElementById("mySidenav").style.width = "260px"; }
     function closeNav() { document.getElementById("mySidenav").style.width = "0"; }
     function unlockApp() { document.getElementById('adminLock').style.display = 'none'; }
-    function toggleAdminPanel() { let p = document.getElementById('adminPanel'); p.style.display = p.style.display === 'none' ? 'block' : 'none'; if(p.style.display === 'block') renderFinanceiro(); }
     
     function syncConfigAndClients() {
         if(!usuarioLogadoUid) return;
@@ -480,7 +481,6 @@
     window.accessPanel = accessPanel;
     window.saveSettings = saveSettings;
     window.showModalCadastro = showModalCadastro;
-    window.toggleAdminPanel = toggleAdminPanel;
 </script>
 </body>
 </html>
