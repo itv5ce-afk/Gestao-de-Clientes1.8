@@ -11,7 +11,8 @@
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { background-color: #000; color: #fff; font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, sans-serif; padding-bottom: 20px; }
         .navbar { background-color: #111; border-bottom: 1px solid #333; position: relative; }
-        .card-cliente { background-color: #1a1a1a; border: 1px solid #333; border-radius: 12px; margin-bottom: 12px; padding: 14px; transition: all 0.1s ease; }
+        .card-cliente { background-color: #1a1a1a; border: 1px solid #333; border-radius: 12px; margin-bottom: 12px; padding: 14px; transition: all 0.1s ease; cursor: pointer; }
+        .card-cliente:active { transform: scale(0.98); }
         .btn-small { font-size: 0.7rem; padding: 5px; flex: 1; margin: 2px; border: none; color: white; border-radius: 30px; font-weight: 500; }
         .bg-lilas { background-color: #9933ff !important; color: white; }
         #adminLock { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: black; z-index: 9999; display: none; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
@@ -25,7 +26,6 @@
         .btn-add-fixo { position: absolute; top: 8px; right: 15px; background-color: #198754; color: white; border: none; z-index: 1030; border-radius: 40px; width: 44px; height: 44px; font-size: 1.6rem; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
         .filter-buttons { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
         .filter-buttons button { flex: 1; min-width: 70px; font-size: 0.75rem; font-weight: 600; border-radius: 40px; padding: 6px 0; }
-        .whatsapp-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
         .btn-sm-custom { font-size: 0.7rem; padding: 6px 12px; border-radius: 40px; font-weight: 500; }
         .modal-content { background: #1e1e1e; border-radius: 28px; border: none; }
         input, textarea, .form-control, .form-select { background-color: #2a2a2a !important; color: white !important; border-color: #444 !important; border-radius: 14px !important; }
@@ -34,9 +34,22 @@
         hr { opacity: 0.3; }
         .btn-outline-light { border-radius: 40px; }
         .nav-buttons-painel { display: flex; gap: 8px; margin-bottom: 20px; }
-        @media (max-width: 576px) {
-            .card-cliente h5 { font-size: 1rem; }
+        
+        /* Novos estilos para o card de informações */
+        .cliente-info { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 10px; font-size: 0.78rem; color: #ccc; margin-top: 6px; }
+        .cliente-info .info-item { display: flex; gap: 4px; }
+        .cliente-info .info-label { color: #888; font-weight: 500; }
+        .cliente-info .info-value { color: #fff; word-break: break-all; }
+        .cliente-info .info-full { grid-column: 1 / -1; }
+        
+        /* Estilos para os botões do modal de ações */
+        .modal-acoes-grid { display: flex; flex-direction: column; gap: 10px; }
+        .modal-acoes-row { display: flex; gap: 8px; }
+        .modal-acoes-row .btn { flex: 1; font-size: 0.78rem; font-weight: 600; padding: 10px 4px; border-radius: 12px; border: none; color: white; display: flex; align-items: center; justify-content: center; gap: 4px; }
+        
+        @media (max-width: 576px) {            .card-cliente h5 { font-size: 1rem; }
             .stat-val { font-size: 1.2rem; }
+            .modal-acoes-row .btn { font-size: 0.72rem; padding: 9px 2px; }
         }
     </style>
 </head>
@@ -83,8 +96,7 @@
         <input type="text" id="url3" class="form-control mb-2">
         <button class="btn btn-info w-100 mt-2" onclick="saveSettings()">Salvar Configurações</button>
         <button class="btn btn-danger w-100 mt-4" onclick="handleLogout()">Sair da Conta</button>
-    </div>
-</div>
+    </div></div>
 
 <nav class="navbar sticky-top px-2 py-1">
     <div class="container-fluid d-flex align-items-center justify-content-between">
@@ -95,13 +107,11 @@
                 <small id="userEmailDisplay" class="d-block text-secondary" style="font-size: 0.7rem;"></small>
             </div>
         </div>
-        <!-- Botão "Gestão" removido conforme solicitado anteriormente -->
     </div>
     <button class="btn btn-add-fixo" onclick="showModalCadastro()"><i class="bi bi-plus-lg"></i></button>
 </nav>
 
 <div class="container mt-2">
-    <!-- Painel financeiro sempre visível -->
     <div id="adminPanel" class="mb-4 p-2">
         <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
             <h5 class="m-0"><i class="bi bi-cash-stack text-success"></i> Financeiro</h5>
@@ -122,7 +132,6 @@
         <button class="btn-small bg-primary" onclick="filterData('ativos')">ATIVOS <span id="countAtivos">0</span></button>
         <button class="btn-small" style="background-color: orange;" onclick="filterData('vencer')">A VENCER <span id="countVencer">0</span></button>
         <button class="btn-small bg-danger" onclick="filterData('expirados')">EXPIRADOS <span id="countExp">0</span></button>
-        <!-- Botão renomeado para "A RECEBER" -->
         <button class="btn-small bg-info" onclick="filterData('apagar')">A RECEBER <span id="countPagar">0</span></button>
         <button class="btn-small bg-secondary" onclick="filterData('deletados')">LIXO <span id="countDel">0</span></button>
     </div>
@@ -136,8 +145,7 @@
     <div id="listaClientes"></div>
 </div>
 
-<!-- Modal Cadastro/Edição -->
-<div class="modal fade" id="modalCadastro" tabindex="-1" data-bs-backdrop="static">
+<!-- Modal Cadastro/Edição --><div class="modal fade" id="modalCadastro" tabindex="-1" data-bs-backdrop="static">
     <div class="modal-dialog modal-dialog-scrollable">
         <div class="modal-content bg-dark text-white">
             <div class="modal-header border-secondary"><h5 class="modal-title">📋 Cliente</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
@@ -158,17 +166,35 @@
     </div>
 </div>
 
+<!-- Modal de Ações do Cliente (abre ao clicar no card) -->
+<div class="modal fade" id="modalAcoes" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content bg-dark text-white">
+            <div class="modal-header border-secondary">
+                <div>
+                    <h5 class="modal-title" id="acoesTitulo">👤 Cliente</h5>
+                    <small class="text-secondary" id="acoesSubtitulo"></small>
+                </div>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="cliente-info mb-3" id="acoesInfoResumo"></div>
+                <hr class="border-secondary">
+                <div class="modal-acoes-grid" id="acoesGrid"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
 
 <script>
-    // Firebase Config
     const firebaseConfig = {
       apiKey: "AIzaSyDd_rtYsto9_0zp8pxYwXRs4XRRip7k3uc",
-      authDomain: "itvcontrol.firebaseapp.com",
-      projectId: "itvcontrol",
+      authDomain: "itvcontrol.firebaseapp.com",      projectId: "itvcontrol",
       storageBucket: "itvcontrol.firebasestorage.app",
       messagingSenderId: "291731890067",
       appId: "1:291731890067:web:e75e79766765d861db5266"
@@ -217,8 +243,7 @@
             document.getElementById('url1').value = config.p1 || "";
             document.getElementById('url2').value = config.p2 || "";
             document.getElementById('url3').value = config.p3 || "";
-        });
-        db.collection("usuarios").doc(usuarioLogadoUid).collection("clientes").onSnapshot(snapshot => {
+        });        db.collection("usuarios").doc(usuarioLogadoUid).collection("clientes").onSnapshot(snapshot => {
             clientes = [];
             snapshot.forEach(doc => { clientes.push({ id: doc.id, ...doc.data() }); });
             renderClientes();
@@ -267,8 +292,7 @@
         if(id === "") {
             db.collection("usuarios").doc(usuarioLogadoUid).collection("clientes").add(clienteData).then(() => modal.hide());
         } else {
-            const original = clientes.find(c => c.id === id);
-            if(original) {
+            const original = clientes.find(c => c.id === id);            if(original) {
                 clienteData.status = original.status;
                 if(original.ultimoPagamento) clienteData.ultimoPagamento = original.ultimoPagamento;
             }
@@ -317,8 +341,7 @@
         else alert("Número não cadastrado!");
         db.collection("usuarios").doc(usuarioLogadoUid).collection("clientes").doc(id).update({
             data: novaDataISO,
-            status: 'apagar'
-        });
+            status: 'apagar'        });
     }
     
     function pagarCliente(id) {
@@ -335,6 +358,71 @@
         });
     }
 
+    // Novo: envia dados de acesso via WhatsApp (COMPARTILHAR)
+    function compartilharCliente(id) {
+        const c = clientes.find(i => i.id === id);
+        if(!c) return;
+        if(!c.tel) return alert("Telefone não cadastrado!");
+        const msg = `📺 *Dados de Acesso ITV*\n\n👤 Usuário: ${c.user || '-'}\n🔑 Senha: ${c.pass || '-'}\n🔗 Url: ${c.url || '-'}`;
+        window.open(`https://wa.me/${c.tel.replace(/\D/g,'')}?text=${encodeURIComponent(msg)}`);
+    }
+    
+    // Abre o modal de ações ao clicar no card
+    function abrirAcoesCliente(id) {
+        const c = clientes.find(i => i.id === id);
+        if(!c) return;
+        
+        document.getElementById('acoesTitulo').innerText = `👤 ${c.nome}`;
+        document.getElementById('acoesSubtitulo').innerText = c.status === 'apagar' ? '⏳ Status: A RECEBER' : '';
+        
+        // Resumo das informações no topo do modal
+        let infoHtml = `
+            <div class="info-item info-full"><span class="info-label">Nome:</span><span class="info-value">${c.nome}</span></div>
+            <div class="info-item"><span class="info-label">Usuário:</span><span class="info-value">${c.user || '-'}</span></div>
+            <div class="info-item"><span class="info-label">Senha:</span><span class="info-value">${c.pass || '-'}</span></div>
+            <div class="info-item"><span class="info-label">Servidor:</span><span class="info-value">${c.serv || '-'}</span></div>
+            <div class="info-item"><span class="info-label">Valor:</span><span class="info-value">R$ ${c.valor.toFixed(2)}</span></div>
+            <div class="info-item info-full"><span class="info-label">Vencimento:</span><span class="info-value">${formatarDataBR(c.data)}</span></div>
+        `;
+        document.getElementById('acoesInfoResumo').innerHTML = infoHtml;
+        
+        const grid = document.getElementById('acoesGrid');
+        
+        if(c.status === 'deletado') {
+            grid.innerHTML = `
+                <div class="modal-acoes-row">                    <button class="btn btn-info" onclick="restore('${c.id}'); bootstrap.Modal.getInstance(document.getElementById('modalAcoes')).hide();">♻️ RESTAURAR</button>
+                    <button class="btn btn-danger" onclick="hardDelete('${c.id}'); bootstrap.Modal.getInstance(document.getElementById('modalAcoes')).hide();">🗑️ EXCLUIR PERM</button>
+                </div>
+            `;
+        } else if(c.status === 'apagar') {
+            // Filtro A RECEBER: apenas 2 botões (PAGAR e EDITAR)
+            grid.innerHTML = `
+                <div class="modal-acoes-row">
+                    <button class="btn btn-success" onclick="pagarCliente('${c.id}'); bootstrap.Modal.getInstance(document.getElementById('modalAcoes')).hide();">✅ PAGAR</button>
+                    <button class="btn bg-lilas" onclick="editCliente('${c.id}'); bootstrap.Modal.getInstance(document.getElementById('modalAcoes')).hide();">✏️ EDITAR</button>
+                </div>
+            `;
+        } else {
+            // Fila 1: 4 botões - WhatsApp, COBRAR, RENOVAR, A RECEBER
+            // Fila 2: 3 botões - COMPARTILHAR, EDITAR, DELETAR
+            grid.innerHTML = `
+                <div class="modal-acoes-row">
+                    <button class="btn" style="background-color:#25D366;" onclick="openWhatsApp('${c.id}'); bootstrap.Modal.getInstance(document.getElementById('modalAcoes')).hide();"><i class="bi bi-whatsapp"></i> ZAP</button>
+                    <button class="btn btn-success" onclick="sendCobrancaZap('${c.id}'); bootstrap.Modal.getInstance(document.getElementById('modalAcoes')).hide();">💰 COBRAR</button>
+                    <button class="btn btn-warning text-dark" onclick="renovarCliente('${c.id}'); bootstrap.Modal.getInstance(document.getElementById('modalAcoes')).hide();">🔄 RENOVAR</button>
+                    <button class="btn btn-secondary" onclick="marcarAReceber('${c.id}'); bootstrap.Modal.getInstance(document.getElementById('modalAcoes')).hide();">⏳ A RECEBER</button>
+                </div>
+                <div class="modal-acoes-row">
+                    <button class="btn btn-info" onclick="compartilharCliente('${c.id}'); bootstrap.Modal.getInstance(document.getElementById('modalAcoes')).hide();">📤 COMPARTILHAR</button>
+                    <button class="btn bg-lilas" onclick="editCliente('${c.id}'); bootstrap.Modal.getInstance(document.getElementById('modalAcoes')).hide();">✏️ EDITAR</button>
+                    <button class="btn btn-danger" onclick="softDelete('${c.id}'); bootstrap.Modal.getInstance(document.getElementById('modalAcoes')).hide();">🗑️ DELETAR</button>
+                </div>
+            `;
+        }
+        
+        new bootstrap.Modal(document.getElementById('modalAcoes')).show();
+    }
+    
     function renderClientes() {
         const listaDiv = document.getElementById('listaClientes');
         const searchTerm = document.getElementById('search').value.toLowerCase();
@@ -351,8 +439,7 @@
                 else if(diffDays <= 3) statusReal = 'vencer';
                 else statusReal = 'ativo';
             }
-            if(statusReal === 'ativo') counts.ativos++;
-            if(statusReal === 'vencer') counts.vencer++;
+            if(statusReal === 'ativo') counts.ativos++;            if(statusReal === 'vencer') counts.vencer++;
             if(statusReal === 'expirado') counts.exp++;
             if(c.status === 'apagar') counts.apagar++;
             if(c.status === 'deletado') counts.del++;
@@ -369,33 +456,19 @@
             else if(statusReal === 'vencer') badgeClass = 'bg-warning text-dark';
             let dataExib = c.data.split('-').reverse().join('/');
             
-            let botoesHtml = '';
-            if(c.status === 'deletado') {
-                botoesHtml = `<div class="d-flex gap-2 mt-2"><button class="btn btn-sm btn-info" onclick="restore('${c.id}')">RESTAURAR</button><button class="btn btn-sm btn-danger" onclick="hardDelete('${c.id}')">EXCLUIR PERM</button></div>`;
-            } 
-            else if(c.status === 'apagar') {
-                botoesHtml = `<div class="d-flex gap-2 mt-2"><button class="btn btn-sm btn-success rounded-pill" onclick="pagarCliente('${c.id}')">✅ PAGO</button><button class="btn btn-sm bg-lilas rounded-pill" onclick="editCliente('${c.id}')"><i class="bi bi-pencil"></i> Editar</button></div>`;
-            }
-            else {
-                botoesHtml = `
-                <div class="whatsapp-row mt-2">
-                    <button class="btn btn-sm btn-success flex-fill" onclick="sendCobrancaZap('${c.id}')">💰 COBRAR</button>
-                    <button class="btn btn-sm" style="background-color:#25D366; color:white;" onclick="openWhatsApp('${c.id}')"><i class="bi bi-whatsapp"></i> Zap</button>
-                    <button class="btn btn-sm btn-warning text-dark flex-fill" onclick="renovarCliente('${c.id}')">🔄 RENOVAR</button>
-                    <button class="btn btn-sm btn-secondary flex-fill" onclick="marcarAReceber('${c.id}')">⏳ A RECEBER</button>
-                    <button class="btn btn-sm bg-lilas" onclick="editCliente('${c.id}')"><i class="bi bi-pencil"></i></button>
-                    <button class="btn btn-sm btn-danger" onclick="softDelete('${c.id}')"><i class="bi bi-trash"></i></button>
-                </div>`;
-            }
-            
+            // Card com informações expandidas (nome, usuário, senha, servidor, valor)
             listaDiv.innerHTML += `
-                <div class="card-cliente">
+                <div class="card-cliente" onclick="abrirAcoesCliente('${c.id}')">
                     <div class="d-flex justify-content-between align-items-start flex-wrap">
                         <h5 class="mb-1">${c.nome}</h5>
                         <span class="badge ${badgeClass}">${dataExib}</span>
                     </div>
-                    <p class="small mb-1">User: ${c.user || '-'} | Valor: <strong>R$ ${c.valor.toFixed(2)}</strong></p>
-                    ${botoesHtml}
+                    <div class="cliente-info">
+                        <div class="info-item"><span class="info-label">Usuário:</span><span class="info-value">${c.user || '-'}</span></div>
+                        <div class="info-item"><span class="info-label">Senha:</span><span class="info-value">${c.pass || '-'}</span></div>
+                        <div class="info-item"><span class="info-label">Servidor:</span><span class="info-value">${c.serv || '-'}</span></div>
+                        <div class="info-item"><span class="info-label">Valor:</span><span class="info-value">R$ ${c.valor.toFixed(2)}</span></div>
+                    </div>
                 </div>
             `;
         });
@@ -415,8 +488,7 @@
         if(c.tel) window.open(`https://wa.me/${c.tel.replace(/\D/g,'')}?text=${encodeURIComponent(msgCobranca)}`);
         else alert("Número não cadastrado!");
     }
-    
-    function openWhatsApp(id) {
+        function openWhatsApp(id) {
         const c = clientes.find(i => i.id === id);
         if(c && c.tel) window.open(`https://wa.me/${c.tel.replace(/\D/g,'')}`);
         else alert("Telefone não informado.");
@@ -434,7 +506,6 @@
                 totalGeral += val;
                 totalActive++;
                 
-                // A RECEBER: clientes com vencimento no mês E que não têm pagamento registrado nesse mês
                 if(c.data && c.data.startsWith(mes)) {
                     const temPagamentoNoMes = c.ultimoPagamento && c.ultimoPagamento.startsWith(mes);
                     if(!temPagamentoNoMes) {
@@ -444,7 +515,6 @@
             }
         });
         
-        // RECEBIDO = LUCRO GERAL - A RECEBER
         const recebido = totalGeral - aReceber;
         
         document.getElementById('finRecebido').innerText = `R$ ${recebido.toFixed(2)}`;
@@ -467,11 +537,12 @@
             document.getElementById('cUrl').value = c.url; document.getElementById('cTel').value = c.tel; document.getElementById('cObs').value = c.obs;
             new bootstrap.Modal(document.getElementById('modalCadastro')).show();
         }
-    }
-    
+    }    
     window.renovarCliente = renovarCliente;
     window.marcarAReceber = marcarAReceber;
     window.pagarCliente = pagarCliente;
+    window.compartilharCliente = compartilharCliente;
+    window.abrirAcoesCliente = abrirAcoesCliente;
     window.sendCobrancaZap = sendCobrancaZap;
     window.openWhatsApp = openWhatsApp;
     window.editCliente = editCliente;
